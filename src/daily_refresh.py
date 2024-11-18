@@ -13,35 +13,47 @@ cookies = {"NYT-S": my_cookie}
 
 puzzle_types = ["daily", "mini", "bonus"]
 
-def get_today(puzzle_type, date):
-    url = f"https://www.nytimes.com/svc/crosswords/v3//puzzles.json?publish_type={puzzle_type}&sort_order=asc&sort_by=print_date&date_start={date}&date_end={date}"
+def get_last_date(current_frame_path):
+    current_frame = pd.read_csv("data/" + current_frame_path)
+    last_date = current_frame.iloc[-1]["print_date"]
+    print("last date is " + last_date)
+    return last_date
+
+def get_today(puzzle_type, start_date, end_date):
+    print(start_date)
+    print(end_date)
+    url = f"https://www.nytimes.com/svc/crosswords/v3//puzzles.json?publish_type={puzzle_type}&sort_order=asc&sort_by=print_date&date_start={start_date}&date_end={end_date}"
     data = json.loads(get_data(url = url, cookies = cookies))["results"]
     metadata = pd.DataFrame(data, dtype = str)
-
-    this_puzzle_id = metadata["puzzle_id"].values[0]
-    url = "https://www.nytimes.com/svc/crosswords/v6/game/" + this_puzzle_id + ".json"
-    
+   
     my_stats = {}
-    my_stats[this_puzzle_id] = json.loads(get_data(url, cookies))["calcs"]    
-    metadata_dedup = metadata.drop_duplicates()
-    metadata_dedup = metadata_dedup.reset_index(drop = True).astype("string")
+
+    for i in range(len(metadata)):
+        this_puzzle_id = metadata["puzzle_id"].values[i]
+        url = "https://www.nytimes.com/svc/crosswords/v6/game/" + this_puzzle_id + ".json"
+        
+        
+        my_stats[this_puzzle_id] = json.loads(get_data(url, cookies))["calcs"]    
+        metadata_dedup = metadata.drop_duplicates()
+        metadata_dedup = metadata_dedup.reset_index(drop = True).astype("string")
 
     stats_frame = get_all_data.create_stats_frame(my_stats)
     todays_data = get_all_data.merge_frames(stats_frame, metadata_dedup)
     todays_data = get_all_data.add_days(todays_data)
-    
+
     return todays_data
 
 def add_todays_data(curr_file_path, puzzle_type):
     current = pd.read_csv("data/" + curr_file_path)
-    todays_data = get_today(puzzle_type, today_date)
+    start_date = get_last_date(curr_file_path)
+    todays_data = get_today(puzzle_type, start_date, today_date)
     new = pd.concat([current, todays_data])
     new = new.drop_duplicates(subset = ["print_date"])
     new.to_csv("data/" + curr_file_path, index = False)
     os.rename(("data/" + curr_file_path), ("data/" + "_".join(curr_file_path.split("_")[:2] + ["".join(today_date.split("-"))]) + ".csv"))
 
 if __name__ == "__main__":
-    os.chdir("/Users/jordanlerner/crossword-stats/")
+    os.chdir("/Users/jordanlerner/crossword-stats-public/")
     cur_files = os.listdir("data/")
     
     mini_file = [file for file in cur_files if file.startswith("mini")][0]
