@@ -25,31 +25,32 @@ class WelcomeWindow(YesNoPopUpWindow):
         intro_text = "Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?"
         super().__init__("Welcome!", intro_text)
 
-class MenuPage(qtw.QVBoxLayout):
+class MenuPage(qtw.QWidget):
     def __init__(self, text, rel_image_path = None):
         super().__init__()
-        self.create_page(text, rel_image_path)
+        layout = qtw.QVBoxLayout()
+        layout.addWidget(qtw.QLabel(text))
 
-    def create_page(self, text, rel_image_path = None):
-        page_text = qtw.QLabel()
-        page_text.setText(text)
-        self.addWidget(page_text)
         if rel_image_path:
             page_image = qtw.QLabel()
             page_image.setPixmap(QPixmap(os.getcwd() + rel_image_path))
-            self.addWidget(page_image)
+            layout.addWidget(page_image)
+        self.setLayout(layout)
 
 
-class IntroMenuPages(qtw.QComboBox):
+class IntroMenuPages(qtw.QWidget):
     '''
     Menu that has next and previous arrows that switch the "page" of the menu.
     '''
     def __init__(self):
         super().__init__()
         self.create_pages()
+        self.setWindowTitle("Cookie Instructions")
+        self.resize(400, 300)
+        self.show()
     
     def create_pages(self):
-        stacked_widget =  qtw.QStackedWidget()
+        layout = qtw.QVBoxLayout()
 
         page1 = MenuPage("Open https://www.nytimes.com/crosswords in Google Chrome.\n\nLog in to your account if not already logged in.")
         page2 = MenuPage("Click on the three dots in the top right corner of the window.", "src/images/menu1.png")
@@ -57,28 +58,86 @@ class IntroMenuPages(qtw.QComboBox):
         page4 = MenuPage("Click on \"Application\"", "src/images/menu3.png")
         page5 = MenuPage(" On the left panel, click \"Cookies\"; this will show a drop-down menu below. Click on \"https://nytimes.com\"", "src/images/menu4.png")
         page6 = MenuPage(""" Under the \"Name\" column, scroll down to find \"NYT-S\". 
-                         The value for your cookie will be in the \"Value\" column, however it will be truncated. 
-                         Click on \"NYT-S\" in the \"Name\" column. Your full cookie will be in the bottom panel (showed below). 
-                         Highlight the full cookie and copy it.""", "src/images/menu5.png")
+                            The value for your cookie will be in the \"Value\" column, however it will be truncated. 
+                            Click on \"NYT-S\" in the \"Name\" column. Your full cookie will be in the bottom panel (showed below). 
+                            Highlight the full cookie and copy it.""", "src/images/menu5.png")
         
-        stacked_widget.addWidget(page1)
-        stacked_widget.addWidget(page2)
-        stacked_widget.addWidget(page3)
-        stacked_widget.addWidget(page4)
-        stacked_widget.addWidget(page5)
-        stacked_widget.addWidget(page6)
+        self.stacked_widget = qtw.QStackedWidget()
+        layout.addWidget(self.stacked_widget)
 
+        self.stacked_widget.addWidget(page1)
+        self.stacked_widget.addWidget(page2)
+        self.stacked_widget.addWidget(page3)
+        self.stacked_widget.addWidget(page4)
+        self.stacked_widget.addWidget(page5)
+        self.stacked_widget.addWidget(page6)
 
-        self.addItem("Step 1")
-        self.addItem("Step 2")
-        self.addItem("Step 3")
-        self.addItem("Step 4")
-        self.addItem("Step 5")
-        self.addItem("Step 6")
+        self.setLayout(layout)
+
+        next_prev_buttons = qtw.QVBoxLayout()
+
+        self.prev_button = qtw.QPushButton("Back")
+        self.next_button = qtw.QPushButton("Next")
+
+        next_prev_buttons.addWidget(self.prev_button)
+        next_prev_buttons.addWidget(self.next_button)
         
-        self.activated[int].connect(stacked_widget.setCurrentIndex)
+        self.prev_button.clicked.connect(self.prev_page)
+        self.next_button.clicked.connect(self.next_page)
 
+        layout.addLayout(next_prev_buttons)
 
+        self.update_buttons()
+
+    def next_page(self):
+        '''Go to next page in a stacked widget'''
+        cur_index = self.stacked_widget.currentIndex()
+        if cur_index < self.stacked_widget.count() -1:
+            self.stacked_widget.setCurrentIndex(cur_index + 1)
+        self.update_buttons()
+    
+    def prev_page(self):
+        '''Go to previous page in a stacked widget'''
+        cur_index = self.stacked_widget.currentIndex()
+        if cur_index > 0:
+            self.stacked_widget.setCurrentIndex(cur_index - 1)
+        self.update_buttons()
+
+    def update_buttons(self):
+        '''Change button states based on the current index'''
+        cur_index = self.stacked_widget.currentIndex()
+        total_pages = self.stacked_widget.count()
+
+        self.prev_button.setEnabled(cur_index > 0)
+        self.next_button.setEnabled(cur_index < (total_pages - 1))
+
+class EnterCookie(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle('Enter Cookie')
+        self.setFixedSize(450, 100)
+        self.setLayout(qtw.QHBoxLayout())
         
+
+        self.input_box = qtw.QLineEdit(self)
+        self.input_box.setPlaceholderText("Enter your cookie here")
+        self.input_box.setFixedSize(400, 40)
+        self.input_box.setStyleSheet("padding: 10px;")
+
+        self.ok_button = qtw.QPushButton("OK", self)
+        self.ok_button.clicked.connect(self.get_text)
+
+        self.layout().addWidget(self.ok_button)
+
+
+    def get_text(self):
+        user_cookie = self.input_box.text()
+        return user_cookie
+        
+
+
+
+
 
 

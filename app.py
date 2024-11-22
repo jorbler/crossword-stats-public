@@ -7,18 +7,24 @@ import sys
 class SimpleApp(qtw.QApplication):
     def __init__(self):
         super().__init__([])
+        self.instructions = None
         self.welcome_box()
+        sys.exit(self.exec_())
 
     def welcome_box(self) -> None:
-        intro_text = "Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?"
-        welcome = YesNoPopUpWindow("Welcome!", intro_text)
+        welcome = WelcomeWindow()
         if welcome.exec() == qtw.QMessageBox.Yes:
             self.cookie_instructions()
-        else: 
-            print("no")
+        self.enter_cookie()
 
     def cookie_instructions(self) -> None:
-        IntroMenuPages()
+        self.instructions = IntroMenuPages()
+        self.instructions.show()
+
+    def enter_cookie(self):
+        self.cookie = EnterCookie()
+        self.cookie.show()
+        
 
 if __name__ == "__main__":
     SimpleApp()
