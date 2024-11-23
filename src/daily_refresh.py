@@ -16,12 +16,9 @@ puzzle_types = ["daily", "mini", "bonus"]
 def get_last_date(current_frame_path):
     current_frame = pd.read_csv("data/" + current_frame_path)
     last_date = current_frame.iloc[-1]["print_date"]
-    print("last date is " + last_date)
     return last_date
 
 def get_today(puzzle_type, start_date, end_date):
-    print(start_date)
-    print(end_date)
     url = f"https://www.nytimes.com/svc/crosswords/v3//puzzles.json?publish_type={puzzle_type}&sort_order=asc&sort_by=print_date&date_start={start_date}&date_end={end_date}"
     data = json.loads(get_data(url = url, cookies = cookies))["results"]
     metadata = pd.DataFrame(data, dtype = str)
@@ -53,7 +50,7 @@ def add_todays_data(curr_file_path, puzzle_type):
     os.rename(("data/" + curr_file_path), ("data/" + "_".join(curr_file_path.split("_")[:2] + ["".join(today_date.split("-"))]) + ".csv"))
 
 if __name__ == "__main__":
-    os.chdir("/Users/jordanlerner/crossword-stats-public/")
+    #os.chdir("/Users/jordanlerner/crossword-stats-public/")
     cur_files = os.listdir("data/")
     
     mini_file = [file for file in cur_files if file.startswith("mini")][0]
