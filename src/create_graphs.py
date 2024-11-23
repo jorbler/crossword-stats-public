@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from data_prep_plot import *
+from src.data_prep_plot import *
 
 week_xlabels = ["Mon","Tues","Wed","Thurs","Fri","Sat","Sun"]
 

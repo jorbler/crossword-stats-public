@@ -1,5 +1,6 @@
 # Crossword Statistics Visualizationn Tool
 Jordan Lerner
+# For Peer Review, go to `peer_review_demo.ipynb` !!!
 
 ## Introduction
 Easily recognized by their symmetric grids and numbered squares, crosswords have provided entertainment and fun for over a century. While crossword puzzles have existed in print media, such as newspapers, for most of their existence, the emergence of the internet and the digital world opened brand new doors of possibility for the future of crosswords.
