@@ -24,7 +24,6 @@ class SimpleApp(qtw.QApplication):
     def enter_cookie(self):
         self.cookie = EnterCookie()
         self.cookie.show()
-        
 
 if __name__ == "__main__":
     SimpleApp()

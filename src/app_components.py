@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import sys
 import os
 
@@ -36,7 +37,6 @@ class MenuPage(qtw.QWidget):
             page_image.setPixmap(QPixmap(os.getcwd() + rel_image_path))
             layout.addWidget(page_image)
         self.setLayout(layout)
-
 
 class IntroMenuPages(qtw.QWidget):
     '''
@@ -132,9 +132,16 @@ class EnterCookie(qtw.QWidget):
 
 
     def get_text(self):
-        user_cookie = self.input_box.text()
-        return user_cookie
+        self.cookie_value = self.input_box.text()
+        self.close()
         
+    def get_cookie(self):
+        return self.cookie_value
+
+    def on_cookie_finished(self):
+        # Get the user input after the window is closed
+        self.user_cookie = self.cookie.get_cookie()
+        print(self.user_cookie)   
 
 
 
