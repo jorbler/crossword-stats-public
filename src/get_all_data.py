@@ -107,8 +107,5 @@ def get_all_data():
     save_crosswords(crosswords, puzzle_type, start_date)
     print("Crossword stats saved!")
 
-def main():
-    get_all_data()
-
 if __name__ == "__main__":
     get_all_data()

@@ -1,8 +1,6 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-import sys
 import os
 
 class YesNoPopUpWindow(qtw.QMessageBox):
@@ -111,40 +109,31 @@ class IntroMenuPages(qtw.QWidget):
         self.prev_button.setEnabled(cur_index > 0)
         self.next_button.setEnabled(cur_index < (total_pages - 1))
 
-class EnterCookie(qtw.QWidget):
+class EnterCookie(qtw.QDialog):
+    '''A popup window that prompts the user to enter their cookie into a text box.'''
+
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle('Enter Cookie')
-        self.setFixedSize(450, 100)
-        self.setLayout(qtw.QHBoxLayout())
-        
+        self.setWindowTitle('Welcome!')
+
+        self.welcome_text = qtw.QLabel("Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?")        
 
         self.input_box = qtw.QLineEdit(self)
         self.input_box.setPlaceholderText("Enter your cookie here")
         self.input_box.setFixedSize(400, 40)
-        self.input_box.setStyleSheet("padding: 10px;")
 
         self.ok_button = qtw.QPushButton("OK", self)
-        self.ok_button.clicked.connect(self.get_text)
 
-        self.layout().addWidget(self.ok_button)
-
-
-    def get_text(self):
+        self.ok_button.clicked.connect(self.accept)
+        print(self.input_box.text())
         self.cookie_value = self.input_box.text()
-        self.close()
-        
+
+        self.my_layout = qtw.QVBoxLayout(self)
+        self.my_layout.addWidget(self.welcome_text)
+        self.my_layout.addWidget(self.input_box)
+        self.my_layout.addWidget(self.ok_button)
+        return
+
     def get_cookie(self):
         return self.cookie_value
-
-    def on_cookie_finished(self):
-        # Get the user input after the window is closed
-        self.user_cookie = self.cookie.get_cookie()
-        print(self.user_cookie)   
-
-
-
-
-
-

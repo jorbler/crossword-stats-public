@@ -7,16 +7,20 @@ import sys
 class CWApp(qtw.QApplication):
     def __init__(self):
         super().__init__([])
-        self.instructions = None
+
         self.enter_cookie()
+
         sys.exit(self.exec_())
+        return
 
     def enter_cookie(self):
         self.cookie = EnterCookie()
         self.cookie.show()
-        self.user_cookie = self.cookie.get_cookie()
-        print(self.user_cookie)
+        self.user_cookie = self.cookie.get_cookie() 
+        return
 
+    def main_window(self):
+        return
 
 
 
