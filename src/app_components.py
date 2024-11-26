@@ -1,7 +1,13 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import os
+import json
+
+from src.create_graphs import *
+from src.globals import *
+
 
 class YesNoPopUpWindow(qtw.QMessageBox):
     '''
@@ -16,6 +22,7 @@ class YesNoPopUpWindow(qtw.QMessageBox):
         self.setDefaultButton(qtw.QMessageBox.Yes)
         self.setFont(QFont("Arial", 14, weight = 1))
 
+
 class WelcomeWindow(YesNoPopUpWindow):
     '''
     Welcome window that appears to the user the first time that they open the app.
@@ -23,6 +30,7 @@ class WelcomeWindow(YesNoPopUpWindow):
     def __init__(self):
         intro_text = "Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?"
         super().__init__("Welcome!", intro_text)
+
 
 class MenuPage(qtw.QWidget):
     def __init__(self, text, rel_image_path = None):
@@ -35,6 +43,7 @@ class MenuPage(qtw.QWidget):
             page_image.setPixmap(QPixmap(os.getcwd() + rel_image_path))
             layout.addWidget(page_image)
         self.setLayout(layout)
+
 
 class IntroMenuPages(qtw.QWidget):
     '''
@@ -109,6 +118,7 @@ class IntroMenuPages(qtw.QWidget):
         self.prev_button.setEnabled(cur_index > 0)
         self.next_button.setEnabled(cur_index < (total_pages - 1))
 
+
 class EnterCookie(qtw.QDialog):
     '''A popup window that prompts the user to enter their cookie into a text box.'''
 
@@ -119,21 +129,147 @@ class EnterCookie(qtw.QDialog):
 
         self.welcome_text = qtw.QLabel("Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?")        
 
-        self.input_box = qtw.QLineEdit(self)
+        self.input_box = qtw.QLineEdit()
         self.input_box.setPlaceholderText("Enter your cookie here")
         self.input_box.setFixedSize(400, 40)
 
         self.ok_button = qtw.QPushButton("OK", self)
 
-        self.ok_button.clicked.connect(self.accept)
-        print(self.input_box.text())
-        self.cookie_value = self.input_box.text()
+        self.ok_button.clicked.connect(self.save_cookie)
+        #self.ok_button.clicked.connect(self.accept)
+
+        
 
         self.my_layout = qtw.QVBoxLayout(self)
         self.my_layout.addWidget(self.welcome_text)
         self.my_layout.addWidget(self.input_box)
         self.my_layout.addWidget(self.ok_button)
-        return
+        
 
-    def get_cookie(self):
-        return self.cookie_value
+    def save_cookie(self):
+        self.cookie_value = self.input_box.text()
+        user_dict = {"cookie":self.cookie_value}
+        with open('data/user_data.json', 'w') as f:
+            json.dump(user_dict, f)
+        self.accept()
+     
+
+class CreateCanvas(FigureCanvasQTAgg):
+    def __init__(self, fig):
+        super().__init__(fig)
+
+
+class DailyHistTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.day = "Monday"
+
+        combo_box = qtw.QComboBox()
+        combo_box.addItems(["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])
+        combo_box.currentTextChanged.connect(self.text_changed)
+
+        layout = qtw.QVBoxLayout()
+        layout.addWidget(combo_box)
+        
+        self.fig = qtw.QWidget()
+
+        self.draw_hist()
+        self.fig = plt.gcf()
+
+        self.hist_widget = FigureCanvasQTAgg(self.fig)
+
+        layout.addWidget(self.hist_widget)
+        self.setLayout(layout)
+
+    def draw_hist(self):
+        create_hist(self.day)
+        self.fig = plt.gcf()
+        self.hist_widget = FigureCanvasQTAgg(self.fig)
+
+    def text_changed(self, s):
+        self.day = s
+        print(self.day)
+        self.draw_hist()
+
+    
+    
+    
+class DailyBarTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        layout = qtw.QVBoxLayout()
+        self.setLayout(layout)
+
+        create_compare_ave_times()
+        self.fig = plt.gcf()
+
+        layout.addWidget(FigureCanvasQTAgg(self.fig))
+        self.setLayout(layout)
+
+
+class DailyTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        layout = qtw.QVBoxLayout()
+        tab_widget = qtw.QTabWidget()
+
+
+        self.hist_tab = DailyHistTab()
+        self.bar_tab = DailyBarTab()
+        
+        tab_widget.addTab(self.hist_tab, "Daily Histograms")
+        tab_widget.addTab(self.bar_tab, "Ave. Times Bar Chart")
+
+        layout.addWidget(tab_widget)
+        self.setLayout(layout)
+
+        
+
+
+class MiniTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+
+class BonusTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+
+class MainWindow(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setGeometry(100, 100, 800, 600)
+        layout = qtw.QHBoxLayout()
+        self.setLayout(layout)
+
+
+        self.left_panel = qtw.QListWidget()
+
+        self.left_panel.addItem("Daily")
+        self.left_panel.addItem("Mini")
+        self.left_panel.addItem("Bonus")
+
+        self.left_panel.currentRowChanged.connect(self.change_page)
+        
+        self.left_panel_pages = qtw.QStackedWidget()
+        daily = DailyTab()
+        mini = MiniTab()
+        bonus = BonusTab()
+        
+        self.left_panel_pages.addWidget(daily)
+        self.left_panel_pages.addWidget(mini)
+        self.left_panel_pages.addWidget(bonus)
+        
+        
+
+        layout.addWidget(self.left_panel, 1)
+        layout.addWidget(self.left_panel_pages, 4)
+        
+        self.left_panel.setCurrentRow(0)
+
+    def change_page(self, index):
+        self.left_panel_pages.setCurrentIndex(index)

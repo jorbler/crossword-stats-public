@@ -28,8 +28,6 @@ def create_hist(day: str):
     
     plt.legend(loc='upper right', fontsize='x-large')
 
-    plt.show()
-
 def create_compare_ave_times():
     all_days = prep_bar_chart_all_days()
     all_days_min = all_days/60
@@ -49,10 +47,9 @@ def create_compare_ave_times():
                 all_days_min.values[i] + .75,
                 f'{round(all_days.values[i]//60)}:{str(round(all_days.values[i]%60)).zfill(2)}',
                 fontdict= {"size":"x-large"})
-    plt.show()
 
-def create_mini_hist_box():
-    mini_hist_box_data = prep_mini_hist_box()
+def create_mini_hist_box(num_days:int = 100):
+    mini_hist_box_data = prep_mini_hist_box(num_days)
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -77,4 +74,3 @@ def create_mini_hist_box():
                                     "boxstyle":'round,pad=0.25'})
 
     plt.xticks(range(0, round(labels[4]),20), labels = [f'{num}s' for num in range(0, round(labels[4]),20)])
-    plt.show()

@@ -19,9 +19,9 @@ def load_mini_data():
 
 mini_data = load_mini_data()
 
-def prep_mini_hist_box():
+def prep_mini_hist_box(num_days: int = 100):
     mini_hist_box_data = mini_data[mini_data["day"] != "Saturday"]
-    mini_hist_box_data = mini_hist_box_data[-100:]["seconds_spent_solving"].values
+    mini_hist_box_data = mini_hist_box_data[-(num_days):]["seconds_spent_solving"].values
     return mini_hist_box_data
 
 def load_bonus_data():
