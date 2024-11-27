@@ -1,8 +1,10 @@
 from PyQt5 import QtWidgets as qtw
 from PyQt5.QtCore import Qt
+from PyQt5 import QtCore as qtc
 from PyQt5.QtGui import QFont, QPixmap
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 import os
+import pandas as pd
 import json
 
 from src.create_graphs import *
@@ -154,7 +156,6 @@ class EnterCookie(qtw.QDialog):
         self.accept()
      
 
-class CreateCanvas(FigureCanvasQTAgg):
     def __init__(self, fig):
         super().__init__(fig)
 
@@ -170,29 +171,24 @@ class DailyHistTab(qtw.QWidget):
 
         layout = qtw.QVBoxLayout()
         layout.addWidget(combo_box)
-        
-        self.fig = qtw.QWidget()
 
-        self.draw_hist()
-        self.fig = plt.gcf()
-
+        self.fig, self.ax = plt.subplots(figsize=(8, 6))
         self.hist_widget = FigureCanvasQTAgg(self.fig)
-
         layout.addWidget(self.hist_widget)
+        
         self.setLayout(layout)
+        self.draw_hist()
 
     def draw_hist(self):
-        create_hist(self.day)
-        self.fig = plt.gcf()
-        self.hist_widget = FigureCanvasQTAgg(self.fig)
+        self.ax.clear()
+        create_hist(self.day, self.ax)
+        self.fig.tight_layout()
+        self.hist_widget.draw() 
 
     def text_changed(self, s):
         self.day = s
-        print(self.day)
         self.draw_hist()
 
-    
-    
     
 class DailyBarTab(qtw.QWidget):
     def __init__(self):
@@ -225,12 +221,59 @@ class DailyTab(qtw.QWidget):
         layout.addWidget(tab_widget)
         self.setLayout(layout)
 
-        
-
 
 class MiniTab(qtw.QWidget):
+
     def __init__(self):
         super().__init__()
+        self.days = 30
+
+        self.buttons_dict = {"Last 30 Days": 30,
+                             "Last 60 Days": 60,
+                             "Last 100 Days": 100
+                             }
+
+        self.day_button_30 = qtw.QRadioButton("Last 30 Days")
+        self.day_button_60 = qtw.QRadioButton("Last 60 Days")
+        self.day_button_100 = qtw.QRadioButton("Last 100 Days")
+
+        self.day_button_30.setChecked = True
+
+        self.day_buttons = qtw.QButtonGroup(self)
+        self.day_buttons.addButton(self.day_button_30)
+        self.day_buttons.addButton(self.day_button_60)
+        self.day_buttons.addButton(self.day_button_100)
+
+        self.day_buttons.buttonClicked.connect(self.change_num_days)
+
+        self.buttons_widget = qtw.QWidget()
+        buttons_layout = qtw.QHBoxLayout()
+        buttons_layout.addWidget(self.day_button_30)
+        buttons_layout.addWidget(self.day_button_60)
+        buttons_layout.addWidget(self.day_button_100)
+        self.buttons_widget.setLayout(buttons_layout)
+
+        self.fig, self.ax = plt.subplots(figsize=(8, 6))
+        self.hist_box_widget = FigureCanvasQTAgg(self.fig)
+
+        layout = qtw.QVBoxLayout()
+        layout.addWidget(self.hist_box_widget)
+        layout.addWidget(self.buttons_widget)
+        self.setLayout(layout)
+
+        self.draw_box_hist()
+
+    def draw_box_hist(self):
+        self.ax.clear()
+        create_mini_hist_box(self.days, self.ax)
+
+        self.fig.tight_layout()
+        self.hist_box_widget.draw() 
+
+    def change_num_days(self, button):
+        print(f"button changed: {button.text()}, new value is {self.buttons_dict[button.text()]}")
+        self.days = self.buttons_dict[button.text()]
+        self.draw_box_hist()
 
 
 class BonusTab(qtw.QWidget):
@@ -242,10 +285,9 @@ class MainWindow(qtw.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1000, 600)
         layout = qtw.QHBoxLayout()
         self.setLayout(layout)
-
 
         self.left_panel = qtw.QListWidget()
 
@@ -263,8 +305,6 @@ class MainWindow(qtw.QWidget):
         self.left_panel_pages.addWidget(daily)
         self.left_panel_pages.addWidget(mini)
         self.left_panel_pages.addWidget(bonus)
-        
-        
 
         layout.addWidget(self.left_panel, 1)
         layout.addWidget(self.left_panel_pages, 4)

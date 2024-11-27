@@ -7,26 +7,25 @@ from src.data_prep_plot import *
 week_xlabels = ["Mon","Tues","Wed","Thurs","Fri","Sat","Sun"]
 
 # Graphs for daily CW
-def create_hist(day: str):
+def create_hist(day: str, ax):
 
     day_frame = get_day_frame(day)
 
-    plt.figure(figsize=(8, 6))
-    plt.hist((day_frame["seconds_spent_solving"]/60), bins = 20, color = "lightgrey") 
+    ax.hist((day_frame["seconds_spent_solving"]/60), bins = 20, color = "lightgrey") 
 
-    plt.title(f'{day} Crossword Solve Times', fontdict={"size":"xx-large"})
-    plt.xlabel('Time (minutes)')
-    plt.ylabel('Count')
+    ax.set_title(f'{day} Crossword Solve Times', fontdict={"size":"xx-large"})
+    ax.set_xlabel('Time (minutes)')
+    ax.set_ylabel('Count')
 
     ave_time = np.mean(day_frame["seconds_spent_solving"])
     best_time = np.min(day_frame["seconds_spent_solving"])
     recent_time = day_frame.iloc[-1, 0]
 
-    plt.axvline(ave_time/60, color='dodgerblue', linestyle='--', linewidth=2, label=f'Average: {int(ave_time//60)}:{(str(round(ave_time%60))).zfill(2)}')
-    plt.axvline(best_time/60, color='gold', linestyle='--', linewidth=2, label=f'Best: {int(best_time//60)}:{(str(round(best_time%60))).zfill(2)}')
-    plt.axvline(recent_time/60, color = 'deeppink', linestyle='--', linewidth=2, label=f'Most Recent: {int(recent_time//60)}:{(str(round(recent_time%60))).zfill(2)}')
+    ax.axvline(ave_time/60, color='dodgerblue', linestyle='--', linewidth=2, label=f'Average: {int(ave_time//60)}:{(str(round(ave_time%60))).zfill(2)}')
+    ax.axvline(best_time/60, color='gold', linestyle='--', linewidth=2, label=f'Best: {int(best_time//60)}:{(str(round(best_time%60))).zfill(2)}')
+    ax.axvline(recent_time/60, color = 'deeppink', linestyle='--', linewidth=2, label=f'Most Recent: {int(recent_time//60)}:{(str(round(recent_time%60))).zfill(2)}')
     
-    plt.legend(loc='upper right', fontsize='x-large')
+    ax.legend(loc='upper right', fontsize='x-large')
 
 def create_compare_ave_times():
     all_days = prep_bar_chart_all_days()
@@ -48,14 +47,15 @@ def create_compare_ave_times():
                 f'{round(all_days.values[i]//60)}:{str(round(all_days.values[i]%60)).zfill(2)}',
                 fontdict= {"size":"x-large"})
 
-def create_mini_hist_box(num_days:int = 100):
+def create_mini_hist_box(num_days, ax):
+    ax.clear()
     mini_hist_box_data = prep_mini_hist_box(num_days)
-
-    fig, ax = plt.subplots(figsize=(10, 6))
+    print(mini_hist_box_data)
 
     ax.hist(mini_hist_box_data, bins=30, color='gold', edgecolor='black')
 
     ax_box = ax.twinx()
+    ax_box.clear()
     ax_box.boxplot(mini_hist_box_data, vert=False, widths=0.1, patch_artist=True,
                 boxprops=dict(facecolor='dodgerblue', color='black'),
                 medianprops=dict(color='black'), 
@@ -64,7 +64,7 @@ def create_mini_hist_box(num_days:int = 100):
     ax_box.set_yticks([])
 
     labels = [np.min(mini_hist_box_data)] + list(np.percentile(mini_hist_box_data, [25, 50, 75])) + [np.max(mini_hist_box_data)]
-
+    print(labels)
     for i in range(len(labels)):
         ax_box.text(labels[i] - 2 , 1.07, f'{round(labels[i])}s', 
                     fontdict={"style":"normal", 
