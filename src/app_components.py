@@ -227,6 +227,7 @@ class MiniTab(qtw.QWidget):
     def __init__(self):
         super().__init__()
         self.days = 30
+        self.ax_box = None
 
         self.buttons_dict = {"Last 30 Days": 30,
                              "Last 60 Days": 60,
@@ -237,7 +238,7 @@ class MiniTab(qtw.QWidget):
         self.day_button_60 = qtw.QRadioButton("Last 60 Days")
         self.day_button_100 = qtw.QRadioButton("Last 100 Days")
 
-        self.day_button_30.setChecked = True
+        self.day_button_30.setChecked(True)
 
         self.day_buttons = qtw.QButtonGroup(self)
         self.day_buttons.addButton(self.day_button_30)
@@ -265,7 +266,13 @@ class MiniTab(qtw.QWidget):
 
     def draw_box_hist(self):
         self.ax.clear()
-        create_mini_hist_box(self.days, self.ax)
+        
+        if self.ax_box:
+            self.ax_box.remove()
+            self.ax_box = None
+
+        self.ax_box = self.ax.twinx()
+        create_mini_hist_box(self.days, self.ax, self.ax_box)
 
         self.fig.tight_layout()
         self.hist_box_widget.draw() 
@@ -273,6 +280,7 @@ class MiniTab(qtw.QWidget):
     def change_num_days(self, button):
         print(f"button changed: {button.text()}, new value is {self.buttons_dict[button.text()]}")
         self.days = self.buttons_dict[button.text()]
+        print(self.days)
         self.draw_box_hist()
 
 

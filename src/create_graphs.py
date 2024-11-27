@@ -47,20 +47,18 @@ def create_compare_ave_times():
                 f'{round(all_days.values[i]//60)}:{str(round(all_days.values[i]%60)).zfill(2)}',
                 fontdict= {"size":"x-large"})
 
-def create_mini_hist_box(num_days, ax):
-    ax.clear()
+def create_mini_hist_box(num_days, ax, ax_box):
     mini_hist_box_data = prep_mini_hist_box(num_days)
     print(mini_hist_box_data)
 
     ax.hist(mini_hist_box_data, bins=30, color='gold', edgecolor='black')
 
-    ax_box = ax.twinx()
-    ax_box.clear()
     ax_box.boxplot(mini_hist_box_data, vert=False, widths=0.1, patch_artist=True,
                 boxprops=dict(facecolor='dodgerblue', color='black'),
                 medianprops=dict(color='black'), 
                 flierprops={"markerfacecolor":'red', 
                             "marker":"o"})
+    
     ax_box.set_yticks([])
 
     labels = [np.min(mini_hist_box_data)] + list(np.percentile(mini_hist_box_data, [25, 50, 75])) + [np.max(mini_hist_box_data)]
@@ -72,5 +70,6 @@ def create_mini_hist_box(num_days, ax):
                             fontweight = "bold",
                             bbox={"facecolor":"white", 
                                     "boxstyle":'round,pad=0.25'})
-
-    plt.xticks(range(0, round(labels[4]),20), labels = [f'{num}s' for num in range(0, round(labels[4]),20)])
+        
+    ax.set_xticks(range(0, round(labels[4]), 20))
+    ax.set_xticklabels([f'{num}s' for num in range(0, round(labels[4]),20)])
