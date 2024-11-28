@@ -2,13 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from src.data_prep_plot import *
+from src.data_prep import *
 
 week_xlabels = ["Mon","Tues","Wed","Thurs","Fri","Sat","Sun"]
 
-# Graphs for daily CW
 def create_hist(day: str, ax):
-
     day_frame = get_day_frame(day)
 
     ax.hist((day_frame["seconds_spent_solving"]/60), bins = 20, color = "lightgrey") 
@@ -49,7 +47,6 @@ def create_compare_ave_times():
 
 def create_mini_hist_box(num_days, ax, ax_box):
     mini_hist_box_data = prep_mini_hist_box(num_days)
-    print(mini_hist_box_data)
 
     ax.hist(mini_hist_box_data, bins=30, color='gold', edgecolor='black')
 
@@ -62,7 +59,6 @@ def create_mini_hist_box(num_days, ax, ax_box):
     ax_box.set_yticks([])
 
     labels = [np.min(mini_hist_box_data)] + list(np.percentile(mini_hist_box_data, [25, 50, 75])) + [np.max(mini_hist_box_data)]
-    print(labels)
     for i in range(len(labels)):
         ax_box.text(labels[i] - 2 , 1.07, f'{round(labels[i])}s', 
                     fontdict={"style":"normal", 
@@ -73,3 +69,4 @@ def create_mini_hist_box(num_days, ax, ax_box):
         
     ax.set_xticks(range(0, round(labels[4]), 20))
     ax.set_xticklabels([f'{num}s' for num in range(0, round(labels[4]),20)])
+    ax.set_title(f"Last {num_days} of Mini Puzzles (Excluding Saturdays)", fontdict={"size":"xx-large"})

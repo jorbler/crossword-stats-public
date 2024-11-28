@@ -1,21 +1,23 @@
 from PyQt5 import QtWidgets as qtw
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QAbstractTableModel
 from PyQt5 import QtCore as qtc
 from PyQt5.QtGui import QFont, QPixmap
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from datetime import date
 import os
 import pandas as pd
 import json
 
+from src.get_all_data import *
 from src.create_graphs import *
 from src.globals import *
-
+import src.data_refresh
 
 class YesNoPopUpWindow(qtw.QMessageBox):
     '''
-    Creates a dialog box with body text
+    Creates a dialog box with title, body text, and Yes/No buttons.
     '''
-    def __init__(self, title, body_text):
+    def __init__(self, title: str, body_text: str):
         super().__init__()
         
         self.setWindowTitle(title)
@@ -138,16 +140,12 @@ class EnterCookie(qtw.QDialog):
         self.ok_button = qtw.QPushButton("OK", self)
 
         self.ok_button.clicked.connect(self.save_cookie)
-        #self.ok_button.clicked.connect(self.accept)
-
         
-
         self.my_layout = qtw.QVBoxLayout(self)
         self.my_layout.addWidget(self.welcome_text)
         self.my_layout.addWidget(self.input_box)
         self.my_layout.addWidget(self.ok_button)
         
-
     def save_cookie(self):
         self.cookie_value = self.input_box.text()
         user_dict = {"cookie":self.cookie_value}
@@ -204,13 +202,12 @@ class DailyBarTab(qtw.QWidget):
         self.setLayout(layout)
 
 
-class DailyTab(qtw.QWidget):
+class DailyGraphsTab(qtw.QWidget):
     def __init__(self):
         super().__init__()
 
         layout = qtw.QVBoxLayout()
         tab_widget = qtw.QTabWidget()
-
 
         self.hist_tab = DailyHistTab()
         self.bar_tab = DailyBarTab()
@@ -222,8 +219,37 @@ class DailyTab(qtw.QWidget):
         self.setLayout(layout)
 
 
-class MiniTab(qtw.QWidget):
+class DailyTableTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
 
+        daily_df = daily_table()
+        table_widget = TableWidget(daily_df, ["Time","Date","Day"])
+
+        layout = qtw.QVBoxLayout()
+
+        layout.addWidget(table_widget)
+        self.setLayout(layout)
+
+
+class DailyTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        layout = qtw.QVBoxLayout()
+        tab_widget = qtw.QTabWidget()
+
+        self.graphs_tab = DailyGraphsTab()
+        self.tables_tab = DailyTableTab()
+
+        tab_widget.addTab(self.graphs_tab, "Graphs")
+        tab_widget.addTab(self.tables_tab, "Table View")
+
+        layout.addWidget(tab_widget)
+        self.setLayout(layout)
+
+        
+class MiniGraphTab(qtw.QWidget):
     def __init__(self):
         super().__init__()
         self.days = 30
@@ -278,15 +304,272 @@ class MiniTab(qtw.QWidget):
         self.hist_box_widget.draw() 
 
     def change_num_days(self, button):
-        print(f"button changed: {button.text()}, new value is {self.buttons_dict[button.text()]}")
         self.days = self.buttons_dict[button.text()]
-        print(self.days)
         self.draw_box_hist()
+
+
+class MiniTableTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        mini_df = mini_table()
+        table_widget = TableWidget(mini_df, ["Time","Date","Day"])
+
+        layout = qtw.QVBoxLayout()
+
+        layout.addWidget(table_widget)
+        self.setLayout(layout)
+
+
+class MiniTab(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        layout = qtw.QVBoxLayout()
+        tab_widget = qtw.QTabWidget()
+
+        self.graphs_tab = MiniGraphTab()
+        self.tables_tab = MiniTableTab()
+
+        tab_widget.addTab(self.graphs_tab, "Graphs")
+        tab_widget.addTab(self.tables_tab, "Table View")
+
+        layout.addWidget(tab_widget)
+        self.setLayout(layout)
+
+
+class TableWidgetConfigure(QAbstractTableModel):
+    def __init__(self, dataframe, col_names):
+        super().__init__()
+        self.dataframe = dataframe
+        self.col_names = col_names
+
+    def rowCount(self, parent = None):
+        return self.dataframe.shape[0]
+
+    def columnCount(self, parent = None):
+        return self.dataframe.shape[1]
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            value = self.dataframe.iloc[index.row(), index.column()]
+            return str(value)
+        return None
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                return self.col_names[section]
+            elif orientation == Qt.Vertical:
+                return str(self.dataframe.index[section])
+        return None
+    
+    def updateData(self, new_data):
+        self.beginResetModel()
+        self._data = new_data
+        self.endResetModel()
+
+
+class TableWidget(qtw.QWidget):
+    def __init__(self, dataframe, col_names):
+        super().__init__()
+        self.dataframe = dataframe
+
+        self.table = qtw.QTableView()
+        self.model = TableWidgetConfigure(self.dataframe, col_names)
+        self.table.setModel(self.model)
+        self.table.resizeColumnsToContents()
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(qtw.QHeaderView.Stretch)
+        
+
+        layout = qtw.QVBoxLayout()
+        layout.addWidget(self.table)
+        self.setLayout(layout)
 
 
 class BonusTab(qtw.QWidget):
     def __init__(self):
         super().__init__()
+
+        bonus_df = bonus_table()
+        table_widget = TableWidget(bonus_df, ["Time", "Title", "Print Date"])
+
+        layout = qtw.QVBoxLayout()
+
+        layout.addWidget(table_widget)
+        self.setLayout(layout)
+
+
+class RefreshButton(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.get_last_date()
+
+        self.refresh_button = qtw.QPushButton("Refresh Data")
+        self.refresh_button.clicked.connect(self.refresh_data)
+
+        layout = qtw.QHBoxLayout()
+        layout.addWidget(self.refresh_button)
+        self.setLayout(layout)
+
+    def refresh_data(self):
+        if self.check_date():
+            src.data_refresh.main()
+            return
+        else:
+            if self.confirm_refresh():
+                src.data_refresh.main()
+                return
+            else:
+                return
+            
+    def get_last_date(self):
+        with open("data/user_data.json", 'r') as file:
+            self._user_data = json.load(file)
+        self.last_date = datetime.strptime(self._user_data["last_refresh_date"], "%Y-%m-%d").date()
+
+    def check_date(self):
+        if ((date.today() - timedelta(days=1)) - self.last_date).days > 30:
+            return False
+        return True
+
+    def confirm_refresh(self):
+        confirm_window = ConfirmRefresh()
+        if confirm_window.exec() == qtw.QMessageBox.Yes:
+            return True
+        return False        
+
+
+class ConfirmRefresh(YesNoPopUpWindow):
+    def __init__(self):
+        text = "It has been more than 30 days since you last refreshed your crossword data. It may take a couple of minutes to refresh. Do you want to proceed?"
+        super().__init__("Confirm Data Refresh", text)
+
+
+class InitalLoadData(qtw.QWidget):
+    def __init__(self):
+        super().__init__()
+
+        daily_box_layout = qtw.QHBoxLayout()
+        self.daily_box_label = qtw.QLabel("Daily Puzzles Start Date: ")
+        self.daily_date_box = qtw.QLineEdit()
+        self.daily_date_box.setPlaceholderText("YYYY-MM-DD")
+        self.daily_date_box.setFixedSize(400, 40)
+        daily_box_layout.addWidget(self.daily_box_label)
+        daily_box_layout.addWidget(self.daily_date_box)
+
+        mini_box_layout = qtw.QHBoxLayout()
+        self.mini_box_label = qtw.QLabel("Mini Puzzles Start Date: ")
+        self.mini_date_box = qtw.QLineEdit()
+        self.mini_date_box.setPlaceholderText("YYYY-MM-DD")
+        self.mini_date_box.setFixedSize(400, 40)
+        mini_box_layout.addWidget(self.mini_box_label)
+        mini_box_layout.addWidget(self.mini_date_box)
+
+        bonus_box_layout = qtw.QHBoxLayout()
+        self.bonus_box_label = qtw.QLabel("Bonus Puzzles Start Date: ")
+        self.bonus_date_box = qtw.QLineEdit()
+        self.bonus_date_box.setPlaceholderText("YYYY-MM-DD")
+        self.bonus_date_box.setFixedSize(400, 40)
+        bonus_box_layout.addWidget(self.bonus_box_label)
+        bonus_box_layout.addWidget(self.bonus_date_box)
+
+        date_inputs_layout = qtw.QVBoxLayout()
+        date_inputs_layout.addLayout(daily_box_layout)
+        date_inputs_layout.addLayout(mini_box_layout)
+        date_inputs_layout.addLayout(bonus_box_layout)
+        
+        self.puzzle_type_label = qtw.QLabel("")
+        self.progress_label = qtw.QLabel("")
+
+        self.progress_bar = qtw.QProgressBar(self)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+
+        self.load_button = qtw.QPushButton("Load My Data")
+        self.load_button.clicked.connect(self.load_data)
+
+        layout = qtw.QVBoxLayout()
+        layout.addWidget(date_inputs_layout)
+        layout.addWidget(self.progress_label)
+        layout.addWidget(self.progress_bar)
+        layout.addWidget(self.load_button)
+
+        self.setLayout(self.layout)
+
+    def load_data(self):
+        try:
+            with open("data/user_data.json", 'r') as file:
+                    data = json.load(file)
+            cookies = {"NYT-S": data["cookie"]}
+
+            daily_date = self.daily_date_box.text()
+            mini_date = self.mini_date_box.text()
+            bonus_date = self.mini_date_box.text()
+
+            self.puzzle_type_label.setText(f"Loading daily puzzles...")
+            self.progress_bar.setValue(10)
+            self.progress_label.setText("Retrieving puzzle IDs...")
+            my_daily_stats, daily_metadata = retrieve_data("daily", daily_date, cookies)
+            self.progress_bar.setValue(17)
+
+            self.progress_label.setText("Getting your stats...")
+            daily_stats_frame = create_stats_frame(my_daily_stats)
+            self.progress_bar.setValue(25)
+            
+            self.progress_label.setText("Merging stats with metadata...")
+            daily_crosswords = merge_frames(daily_stats_frame, daily_metadata)
+            daily_crosswords = add_days(daily_crosswords)
+            self.progress_bar.setValue(30)
+
+            save_crosswords(daily_crosswords, "daily", daily_date)
+
+            self.puzzle_type_label.setText(f"Loading mini puzzles...")
+            self.progress_bar.setValue(37)
+
+            self.progress_label.setText("Retrieving puzzle IDs...")
+            my_mini_stats, mini_metadata = retrieve_data("mini", mini_date, cookies)
+            self.progress_bar.setValue(45)
+
+            self.progress_label.setText("Getting your stats...")
+            mini_stats_frame = create_stats_frame(my_mini_stats)
+            self.progress_bar.setValue(50)
+            
+            self.progress_label.setText("Merging stats with metadata...")
+            mini_crosswords = merge_frames(mini_stats_frame, mini_metadata)
+            mini_crosswords = add_days(mini_crosswords)
+            self.progress_bar.setValue(60)
+
+            save_crosswords(mini_crosswords, "mini", mini_date)
+
+            self.puzzle_type_label.setText(f"Loading bonus puzzles...")
+            self.progress_bar.setValue(67)
+
+            self.progress_label.setText("Retrieving puzzle IDs...")
+            my_bonus_stats, bonus_metadata = retrieve_data("bonus", bonus_date, cookies)
+            self.progress_bar.setValue(75)
+
+            self.progress_label.setText("Getting your stats...")
+            bonus_stats_frame = create_stats_frame(my_bonus_stats)
+            self.progress_bar.setValue(85)
+            
+            self.progress_label.setText("Merging stats with metadata...")
+            bonus_crosswords = merge_frames(bonus_stats_frame, bonus_metadata)
+            bonus_crosswords = add_days(bonus_crosswords)
+            self.progress_bar.setValue(95)
+            
+            save_crosswords(bonus_crosswords, "bonus", bonus_date)
+            self.progress_label.setText("Data load is complete!")
+
+
+
+
+
+
+
+        except Exception as e:
+            self.layout.addWidget("There was an error getting your data. Please check your cookie and internet connection")
 
 
 class MainWindow(qtw.QWidget):
@@ -297,13 +580,16 @@ class MainWindow(qtw.QWidget):
         layout = qtw.QHBoxLayout()
         self.setLayout(layout)
 
-        self.left_panel = qtw.QListWidget()
+        self.left_panel = qtw.QWidget()
+        left_panel_layout = qtw.QVBoxLayout()
 
-        self.left_panel.addItem("Daily")
-        self.left_panel.addItem("Mini")
-        self.left_panel.addItem("Bonus")
+        self.left_panel_top = qtw.QListWidget()
 
-        self.left_panel.currentRowChanged.connect(self.change_page)
+        self.left_panel_top.addItem("Daily")
+        self.left_panel_top.addItem("Mini")
+        self.left_panel_top.addItem("Bonus")
+
+        self.left_panel_top.currentRowChanged.connect(self.change_page)
         
         self.left_panel_pages = qtw.QStackedWidget()
         daily = DailyTab()
@@ -314,10 +600,17 @@ class MainWindow(qtw.QWidget):
         self.left_panel_pages.addWidget(mini)
         self.left_panel_pages.addWidget(bonus)
 
+        left_panel_layout.addWidget(self.left_panel_top)
+
+        self.refresh_button = RefreshButton()
+        left_panel_layout.addWidget(self.refresh_button)
+
+        self.left_panel.setLayout(left_panel_layout)
+
         layout.addWidget(self.left_panel, 1)
         layout.addWidget(self.left_panel_pages, 4)
         
-        self.left_panel.setCurrentRow(0)
+        self.left_panel_top.setCurrentRow(0)
 
     def change_page(self, index):
         self.left_panel_pages.setCurrentIndex(index)

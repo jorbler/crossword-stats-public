@@ -1,15 +1,17 @@
-from getNYTdata import get_data
+from src.getNYTdata import get_data
 import pandas as pd
 import json
 from datetime import date, timedelta
-import get_all_data as get_all_data
+import src.get_all_data as get_all_data
 import os
 
 today_date = str(date.today() - timedelta(days=1))
 today_date_list = str(today_date).split("-")
 
-my_cookie = input("Enter your cookie:")
-cookies = {"NYT-S": my_cookie}
+with open("data/user_data.json", 'r') as file:
+    data = json.load(file)
+    
+cookies = {"NYT-S": data["cookie"]}
 
 puzzle_types = ["daily", "mini", "bonus"]
 
@@ -49,8 +51,7 @@ def add_todays_data(curr_file_path, puzzle_type):
     new.to_csv("data/" + curr_file_path, index = False)
     os.rename(("data/" + curr_file_path), ("data/" + "_".join(curr_file_path.split("_")[:2] + ["".join(today_date.split("-"))]) + ".csv"))
 
-if __name__ == "__main__":
-    #os.chdir("/Users/jordanlerner/crossword-stats-public/")
+def main():
     cur_files = os.listdir("data/")
     
     mini_file = [file for file in cur_files if file.startswith("mini")][0]
@@ -62,3 +63,14 @@ if __name__ == "__main__":
     if today_date.endswith("01"):
         bonus_file = [file for file in cur_files if file.startswith("bonus")][0]
         add_todays_data(bonus_file, "bonus")
+
+    with open("data/user_data.json", 'r') as file:
+        user_data = json.load(file)
+    
+    user_data["last_refresh_date"] = str(date.today() - timedelta(days=1))
+    
+    with open('data/user_data.json', 'w') as f:
+        json.dump(user_data, f)
+
+if __name__ == "__main__":
+    main()

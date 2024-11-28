@@ -1,5 +1,5 @@
 import pandas as pd
-from getNYTdata import get_data
+from src.getNYTdata import get_data
 import json
 from datetime import datetime
 from tqdm import tqdm
@@ -92,20 +92,27 @@ def save_crosswords(crosswords, puzzle_type, start_date):
     crosswords.to_csv(f'data/{puzzle_type}_{"".join(start_date.split("-"))}_{str(datetime.now().date())}.csv', index = False)
 
 
-def get_all_data():
-    my_cookie = input("Enter your cookie:")
-    cookies = {"NYT-S": my_cookie}
-    puzzle_type = input("Enter puzzle type: ")
-    start_date = input("What is the start date for the data you want to retrieve? Use the format 'YYYY-MM-DD': ")
+def main():
+    with open("data/user_data.json", 'r') as file:
+        data = json.load(file)
+    cookies = {"NYT-S": data["cookie"]}
+
+    puzzle_type = input("Enter puzzle type: ") #make button
+    start_date = input("What is the start date for the data you want to retrieve? Use the format 'YYYY-MM-DD': ") #make button
+    
     print("Retrieving puzzle IDs...")
     my_stats, metadata = retrieve_data(puzzle_type, start_date, cookies)
+
     print("Getting your stats...")
     stats_frame = create_stats_frame(my_stats)
+
     print("Merging stats with metadata...")
     crosswords = merge_frames(stats_frame, metadata)
     crosswords = add_days(crosswords)
     save_crosswords(crosswords, puzzle_type, start_date)
+
     print("Crossword stats saved!")
 
+
 if __name__ == "__main__":
-    get_all_data()
+    main()

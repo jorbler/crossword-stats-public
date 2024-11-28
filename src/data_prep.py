@@ -55,3 +55,25 @@ def prep_box_plot_all_days() -> pd.DataFrame:
                      gold_all_days[gold_all_days["day"] == "Saturday"]["seconds_spent_solving"].values,
                      gold_all_days[gold_all_days["day"] == "Sunday"]["seconds_spent_solving"].values]
     return day_vals_list
+
+def load_bonus_data():
+    bonus_data = pd.read_csv("data/" + [file for file in data_files if file.startswith("bonus")][0])[["seconds_spent_solving", "title", "print_date"]]
+    return bonus_data
+
+def bonus_table():
+    bonus_data = load_bonus_data()
+    bonus_data["seconds_spent_solving"] = bonus_data["seconds_spent_solving"].apply(lambda x: f"{round(x//60)}m {round(x%60)}s")
+    return bonus_data
+
+def daily_table():
+    daily_table_var = gold_all_days
+    daily_table_var["seconds_spent_solving"] = daily_table_var["seconds_spent_solving"].apply(lambda x: f"{round(x//60)}m {round(x%60)}s")
+    daily_table_var = daily_table_var[["seconds_spent_solving","print_date","day"]]
+    return daily_table_var
+
+def mini_table():
+    mini_table_var = mini_data
+    mini_table_var = mini_table_var[mini_table_var["solved"] == True]
+    mini_table_var["seconds_spent_solving"] = mini_table_var["seconds_spent_solving"].apply(lambda x: f"{round(x//60)}m {round(x%60)}s")
+    mini_table_var = mini_table_var[["seconds_spent_solving","print_date","day"]]
+    return mini_table_var
