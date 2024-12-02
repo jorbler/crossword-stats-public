@@ -2,7 +2,6 @@ import pandas as pd
 from src.getNYTdata import get_data
 import json
 from datetime import datetime
-from tqdm import tqdm
 
 puzzle_types = ["daily", "mini", "bonus"]
 
@@ -50,7 +49,7 @@ def retrieve_data(puzzle_type, start_date, cookies):
     
 
     my_stats = {}
-    for id in tqdm(metadata["puzzle_id"]):
+    for id in (metadata["puzzle_id"]):
         url = "https://www.nytimes.com/svc/crosswords/v6/game/" + str(id) + ".json"
         my_stats[str(id)] = json.loads(get_data(url, cookies))["calcs"]
     metadata_dedup = metadata.drop_duplicates()

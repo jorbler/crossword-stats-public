@@ -5,15 +5,17 @@ from datetime import date, timedelta
 import src.get_all_data as get_all_data
 import os
 
-today_date = str(date.today() - timedelta(days=1))
-today_date_list = str(today_date).split("-")
+def get_info():
+    today_date = str(date.today() - timedelta(days=1))
+    today_date_list = str(today_date).split("-")
 
-with open("data/user_data.json", 'r') as file:
-    data = json.load(file)
-    
-cookies = {"NYT-S": data["cookie"]}
+    with open("data/user_data.json", 'r') as file:
+        data = json.load(file)
+        
+    cookies = {"NYT-S": data["cookie"]}
 
-puzzle_types = ["daily", "mini", "bonus"]
+    puzzle_types = ["daily", "mini", "bonus"]
+    return today_date, today_date_list, cookies, puzzle_types
 
 def get_last_date(current_frame_path):
     current_frame = pd.read_csv("data/" + current_frame_path)
@@ -73,4 +75,5 @@ def main():
         json.dump(user_data, f)
 
 if __name__ == "__main__":
+    today_date, today_date_list, cookies, puzzle_types = get_info()
     main()

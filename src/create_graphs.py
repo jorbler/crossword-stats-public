@@ -69,4 +69,4 @@ def create_mini_hist_box(num_days, ax, ax_box):
         
     ax.set_xticks(range(0, round(labels[4]), 20))
     ax.set_xticklabels([f'{num}s' for num in range(0, round(labels[4]),20)])
-    ax.set_title(f"Last {num_days} of Mini Puzzles (Excluding Saturdays)", fontdict={"size":"xx-large"})
+    ax.set_title(f"Last {num_days} Mini Puzzles (Excluding Saturdays)", fontdict={"size":"xx-large"})

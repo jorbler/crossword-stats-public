@@ -8,10 +8,11 @@ import json
 class CWApp(qtw.QApplication):
     def __init__(self):
         super().__init__([])
-        
-        self.load_user_info()
-        self.main_window()
+        self.has_info = None
 
+        self.load_user_info()
+        if self.has_info:
+            self.main_window()
         sys.exit(self.exec_())
         return
     
@@ -20,7 +21,9 @@ class CWApp(qtw.QApplication):
             with open('data/user_data.json') as f:
                 self.user_cookie = json.load(f)["cookie"]
                 print(self.user_cookie)
+                self.has_info = True
         except Exception as e:
+            self.has_info = False
             self.enter_cookie()
         return
 

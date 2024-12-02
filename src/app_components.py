@@ -151,11 +151,9 @@ class EnterCookie(qtw.QDialog):
         user_dict = {"cookie":self.cookie_value}
         with open('data/user_data.json', 'w') as f:
             json.dump(user_dict, f)
+        self.init_load = InitalLoadData()
+        self.init_load.show()
         self.accept()
-     
-
-    def __init__(self, fig):
-        super().__init__(fig)
 
 
 class DailyHistTab(qtw.QWidget):
@@ -180,7 +178,6 @@ class DailyHistTab(qtw.QWidget):
     def draw_hist(self):
         self.ax.clear()
         create_hist(self.day, self.ax)
-        self.fig.tight_layout()
         self.hist_widget.draw() 
 
     def text_changed(self, s):
@@ -300,7 +297,6 @@ class MiniGraphTab(qtw.QWidget):
         self.ax_box = self.ax.twinx()
         create_mini_hist_box(self.days, self.ax, self.ax_box)
 
-        self.fig.tight_layout()
         self.hist_box_widget.draw() 
 
     def change_num_days(self, button):
@@ -480,23 +476,25 @@ class InitalLoadData(qtw.QWidget):
         date_inputs_layout.addLayout(mini_box_layout)
         date_inputs_layout.addLayout(bonus_box_layout)
         
-        self.puzzle_type_label = qtw.QLabel("")
-        self.progress_label = qtw.QLabel("")
+        self.puzzle_type_label = qtw.QLabel(" ")
+        self.progress_label = qtw.QLabel(" ")
 
-        self.progress_bar = qtw.QProgressBar(self)
+        self.progress_bar = qtw.QProgressBar()
+        self.progress_bar.setFixedHeight(30)
         self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
+        self.progress_bar.setValue(50)
 
         self.load_button = qtw.QPushButton("Load My Data")
         self.load_button.clicked.connect(self.load_data)
 
         layout = qtw.QVBoxLayout()
-        layout.addWidget(date_inputs_layout)
-        layout.addWidget(self.progress_label)
+        layout.addLayout(date_inputs_layout)
+        layout.addWidget(self.puzzle_type_label, alignment = Qt.AlignCenter)
+        layout.addWidget(self.progress_label, alignment = Qt.AlignCenter)
         layout.addWidget(self.progress_bar)
         layout.addWidget(self.load_button)
 
-        self.setLayout(self.layout)
+        self.setLayout(layout)
 
     def load_data(self):
         try:
@@ -562,15 +560,17 @@ class InitalLoadData(qtw.QWidget):
             save_crosswords(bonus_crosswords, "bonus", bonus_date)
             self.progress_label.setText("Data load is complete!")
 
-
-
-
-
-
+            data["last_refreshed_data"] = str(date.today() - timedelta(days=1))
+ 
+            with open('data/user_data.json', 'w') as f:
+                json.dump(data, f)
 
         except Exception as e:
-            self.layout.addWidget("There was an error getting your data. Please check your cookie and internet connection")
+            self.puzzle_type_label.setText("There was an error getting your data. Please check your cookie and internet connection")
 
+        main_window = MainWindow()
+        main_window.show()
+        self.close()
 
 class MainWindow(qtw.QWidget):
     def __init__(self):
