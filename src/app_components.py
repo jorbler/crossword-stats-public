@@ -560,7 +560,7 @@ class InitalLoadData(qtw.QWidget):
             save_crosswords(bonus_crosswords, "bonus", bonus_date)
             self.progress_label.setText("Data load is complete!")
 
-            data["last_refreshed_data"] = str(date.today() - timedelta(days=1))
+            data["last_refresh_date"] = str(date.today() - timedelta(days=1))
  
             with open('data/user_data.json', 'w') as f:
                 json.dump(data, f)

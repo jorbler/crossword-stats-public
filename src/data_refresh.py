@@ -5,17 +5,17 @@ from datetime import date, timedelta
 import src.get_all_data as get_all_data
 import os
 
-def get_info():
-    today_date = str(date.today() - timedelta(days=1))
-    today_date_list = str(today_date).split("-")
+# def get_info():
+#     today_date = str(date.today() - timedelta(days=1))
+#     today_date_list = str(today_date).split("-")
 
-    with open("data/user_data.json", 'r') as file:
-        data = json.load(file)
+#     with open("data/user_data.json", 'r') as file:
+#         data = json.load(file)
         
-    cookies = {"NYT-S": data["cookie"]}
+#     cookies = {"NYT-S": data["cookie"]}
 
-    puzzle_types = ["daily", "mini", "bonus"]
-    return today_date, today_date_list, cookies, puzzle_types
+#     puzzle_types = ["daily", "mini", "bonus"]
+#     return today_date, today_date_list, cookies, puzzle_types
 
 def get_last_date(current_frame_path):
     current_frame = pd.read_csv("data/" + current_frame_path)
@@ -23,6 +23,11 @@ def get_last_date(current_frame_path):
     return last_date
 
 def get_today(puzzle_type, start_date, end_date):
+
+    with open("data/user_data.json", 'r') as file:
+        my_data = json.load(file)
+    cookies = {"NYT-S": my_data["cookie"]}
+
     url = f"https://www.nytimes.com/svc/crosswords/v3//puzzles.json?publish_type={puzzle_type}&sort_order=asc&sort_by=print_date&date_start={start_date}&date_end={end_date}"
     data = json.loads(get_data(url = url, cookies = cookies))["results"]
     metadata = pd.DataFrame(data, dtype = str)
@@ -32,7 +37,6 @@ def get_today(puzzle_type, start_date, end_date):
     for i in range(len(metadata)):
         this_puzzle_id = metadata["puzzle_id"].values[i]
         url = "https://www.nytimes.com/svc/crosswords/v6/game/" + this_puzzle_id + ".json"
-        
         
         my_stats[this_puzzle_id] = json.loads(get_data(url, cookies))["calcs"]    
         metadata_dedup = metadata.drop_duplicates()
@@ -45,6 +49,7 @@ def get_today(puzzle_type, start_date, end_date):
     return todays_data
 
 def add_todays_data(curr_file_path, puzzle_type):
+    today_date = str(date.today() - timedelta(days=1))
     current = pd.read_csv("data/" + curr_file_path)
     start_date = get_last_date(curr_file_path)
     todays_data = get_today(puzzle_type, start_date, today_date)
@@ -75,5 +80,4 @@ def main():
         json.dump(user_data, f)
 
 if __name__ == "__main__":
-    today_date, today_date_list, cookies, puzzle_types = get_info()
     main()

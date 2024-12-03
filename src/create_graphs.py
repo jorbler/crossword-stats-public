@@ -53,7 +53,7 @@ def create_mini_hist_box(num_days, ax, ax_box):
     ax_box.boxplot(mini_hist_box_data, vert=False, widths=0.1, patch_artist=True,
                 boxprops=dict(facecolor='dodgerblue', color='black'),
                 medianprops=dict(color='black'), 
-                flierprops={"markerfacecolor":'red', 
+                flierprops={"markerfacecolor":'deeppink', 
                             "marker":"o"})
     
     ax_box.set_yticks([])
