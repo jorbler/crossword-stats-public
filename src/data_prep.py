@@ -47,8 +47,19 @@ def get_day_frame(day:str) -> pd.DataFrame:
 def prep_bar_chart_all_days() -> pd.DataFrame:
     gold_all_days = daily_gold_days()
     ave_by_day = gold_all_days.groupby("day")["seconds_spent_solving"].mean()
-    ave_by_day = pd.Series([ave_by_day[index_order[0]], ave_by_day[index_order[1]], ave_by_day[index_order[2]], ave_by_day[index_order[3]], ave_by_day[index_order[4]], ave_by_day[index_order[5]], ave_by_day[index_order[6]]], 
-                        index_order)
+    present_days = list(ave_by_day.index)
+    not_present_days = [day for day in index_order if day not in present_days]
+    for day in not_present_days:
+        ave_by_day.loc[day] = 0
+
+    ave_by_day = pd.Series([ave_by_day[index_order[0]],
+                            ave_by_day[index_order[1]],
+                            ave_by_day[index_order[2]],
+                            ave_by_day[index_order[3]],
+                            ave_by_day[index_order[4]],
+                            ave_by_day[index_order[5]],
+                            ave_by_day[index_order[6]]],
+                            index_order)
     return ave_by_day
 
 def prep_box_plot_all_days() -> pd.DataFrame:

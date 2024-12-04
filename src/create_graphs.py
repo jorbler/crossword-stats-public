@@ -29,6 +29,10 @@ def create_compare_ave_times():
     all_days = prep_bar_chart_all_days()
     all_days_min = all_days/60
 
+    for i in range(len(all_days)):
+        if all_days[i] == 0:
+            all_days[i] = ""
+            
     plt.figure(figsize=(8, 6))
 
     plt.bar(all_days_min.index, all_days_min.values, color = "dodgerblue")
@@ -40,10 +44,16 @@ def create_compare_ave_times():
     plt.ylabel("Average Time (in Minutes)", fontdict= {"size":"x-large"})
 
     for i in range(len(all_days)):
-        plt.text(i - .35, 
-                all_days_min.values[i] + .75,
-                f'{round(all_days.values[i]//60)}:{str(round(all_days.values[i]%60)).zfill(2)}',
-                fontdict= {"size":"x-large"})
+        try:
+            plt.text(i - .35, 
+                    all_days_min.values[i] + .75,
+                    f'{round(all_days.values[i]//60)}:{str(round(all_days.values[i]%60)).zfill(2)}',
+                    fontdict= {"size":"x-large"})
+        except Exception as e:
+            plt.text(i - .35, 
+                    all_days_min.values[i] + .75,
+                    f'',
+                    fontdict= {"size":"x-large"})
 
 def create_mini_hist_box(num_days, ax, ax_box):
     mini_hist_box_data = prep_mini_hist_box(num_days)

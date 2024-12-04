@@ -66,7 +66,8 @@ def main():
 
     daily_file = [file for file in cur_files if file.startswith("daily")][0]
     add_todays_data(daily_file, "daily")
-
+    
+    today_date = str(date.today() - timedelta(days=1))
     if today_date.endswith("01"):
         bonus_file = [file for file in cur_files if file.startswith("bonus")][0]
         add_todays_data(bonus_file, "bonus")

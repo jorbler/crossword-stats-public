@@ -131,7 +131,7 @@ class EnterCookie(qtw.QDialog):
 
         self.setWindowTitle('Welcome!')
 
-        self.welcome_text = qtw.QLabel("Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?")        
+        self.welcome_text = qtw.QLabel("Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nFor detailed instructions on how to access your cookie, please go to the README file.")        
 
         self.input_box = qtw.QLineEdit()
         self.input_box.setPlaceholderText("Enter your cookie here")
@@ -443,7 +443,7 @@ class ConfirmRefresh(YesNoPopUpWindow):
         super().__init__("Confirm Data Refresh", text)
 
 
-class InitalLoadData(qtw.QWidget):
+class InitalLoadData(qtw.QDialog):
     def __init__(self):
         super().__init__()
 
@@ -482,21 +482,30 @@ class InitalLoadData(qtw.QWidget):
         self.progress_bar = qtw.QProgressBar()
         self.progress_bar.setFixedHeight(30)
         self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(50)
+        self.progress_bar.setValue(1)
 
         self.load_button = qtw.QPushButton("Load My Data")
         self.load_button.clicked.connect(self.load_data)
+
+        self.continue_button = qtw.QPushButton("Continue", self)
+        self.continue_button.clicked.connect(self.show_main_window)
+        self.continue_button.setEnabled(False)
+
+        buttons_layout = qtw.QHBoxLayout()
+        buttons_layout.addWidget(self.load_button)
+        buttons_layout.addWidget(self.continue_button)
 
         layout = qtw.QVBoxLayout()
         layout.addLayout(date_inputs_layout)
         layout.addWidget(self.puzzle_type_label, alignment = Qt.AlignCenter)
         layout.addWidget(self.progress_label, alignment = Qt.AlignCenter)
         layout.addWidget(self.progress_bar)
-        layout.addWidget(self.load_button)
+        layout.addLayout(buttons_layout)
+        
 
         self.setLayout(layout)
 
-    def load_data(self):
+    def load_data(self):  
         try:
             with open("data/user_data.json", 'r') as file:
                     data = json.load(file)
@@ -506,71 +515,88 @@ class InitalLoadData(qtw.QWidget):
             mini_date = self.mini_date_box.text()
             bonus_date = self.mini_date_box.text()
 
-            self.puzzle_type_label.setText(f"Loading daily puzzles...")
+            print(f"Loading daily puzzles...")
             self.progress_bar.setValue(10)
-            self.progress_label.setText("Retrieving puzzle IDs...")
+            qtw.QApplication.processEvents()
+            print("Retrieving puzzle IDs...")
             my_daily_stats, daily_metadata = retrieve_data("daily", daily_date, cookies)
             self.progress_bar.setValue(17)
+            qtw.QApplication.processEvents()
 
-            self.progress_label.setText("Getting your stats...")
+            print("Getting your stats...")
+            qtw.QApplication.processEvents()
             daily_stats_frame = create_stats_frame(my_daily_stats)
             self.progress_bar.setValue(25)
+            qtw.QApplication.processEvents()
             
-            self.progress_label.setText("Merging stats with metadata...")
+            print("Merging stats with metadata...")
             daily_crosswords = merge_frames(daily_stats_frame, daily_metadata)
             daily_crosswords = add_days(daily_crosswords)
             self.progress_bar.setValue(30)
 
             save_crosswords(daily_crosswords, "daily", daily_date)
 
-            self.puzzle_type_label.setText(f"Loading mini puzzles...")
+            print(f"Loading mini puzzles...")
             self.progress_bar.setValue(37)
+            qtw.QApplication.processEvents()
 
-            self.progress_label.setText("Retrieving puzzle IDs...")
+            print("Retrieving puzzle IDs...")
             my_mini_stats, mini_metadata = retrieve_data("mini", mini_date, cookies)
             self.progress_bar.setValue(45)
+            qtw.QApplication.processEvents()
 
-            self.progress_label.setText("Getting your stats...")
+            print("Getting your stats...")
             mini_stats_frame = create_stats_frame(my_mini_stats)
             self.progress_bar.setValue(50)
-            
-            self.progress_label.setText("Merging stats with metadata...")
+            qtw.QApplication.processEvents()
+
+            print("Merging stats with metadata...")
             mini_crosswords = merge_frames(mini_stats_frame, mini_metadata)
             mini_crosswords = add_days(mini_crosswords)
             self.progress_bar.setValue(60)
+            qtw.QApplication.processEvents()
 
             save_crosswords(mini_crosswords, "mini", mini_date)
 
-            self.puzzle_type_label.setText(f"Loading bonus puzzles...")
+            print(f"Loading bonus puzzles...")
             self.progress_bar.setValue(67)
+            qtw.QApplication.processEvents()
 
-            self.progress_label.setText("Retrieving puzzle IDs...")
+            print("Retrieving puzzle IDs...")
             my_bonus_stats, bonus_metadata = retrieve_data("bonus", bonus_date, cookies)
             self.progress_bar.setValue(75)
+            qtw.QApplication.processEvents()
 
-            self.progress_label.setText("Getting your stats...")
+            print("Getting your stats...")
             bonus_stats_frame = create_stats_frame(my_bonus_stats)
             self.progress_bar.setValue(85)
+            qtw.QApplication.processEvents()
             
-            self.progress_label.setText("Merging stats with metadata...")
+            print("Merging stats with metadata...")
             bonus_crosswords = merge_frames(bonus_stats_frame, bonus_metadata)
             bonus_crosswords = add_days(bonus_crosswords)
             self.progress_bar.setValue(95)
+            qtw.QApplication.processEvents()
             
             save_crosswords(bonus_crosswords, "bonus", bonus_date)
-            self.progress_label.setText("Data load is complete!")
-
+            
             data["last_refresh_date"] = str(date.today() - timedelta(days=1))
  
             with open('data/user_data.json', 'w') as f:
                 json.dump(data, f)
+            
+            self.continue_button.setEnabled(True)
+            self.load_button.setEnabled(False)
+            self.progress_label.setText("Data load is complete! Please click 'continue'")
 
         except Exception as e:
             self.puzzle_type_label.setText("There was an error getting your data. Please check your cookie and internet connection")
 
-        main_window = MainWindow()
-        main_window.show()
-        self.close()
+    def show_main_window(self):
+        self.main_window = MainWindow()
+        self.main_window.show()
+        self.accept()
+
 
 class MainWindow(qtw.QWidget):
     def __init__(self):
