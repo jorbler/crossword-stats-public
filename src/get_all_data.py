@@ -5,7 +5,8 @@ from datetime import datetime
 
 puzzle_types = ["daily", "mini", "bonus"]
 
-def retrieve_data(puzzle_type, start_date, cookies):
+def retrieve_data(puzzle_type: str, start_date: str, cookies: dict) -> tuple[dict, pd.DataFrame]:
+    '''Retrieves data from NYT Games website as JSON files and preprocesses them.'''
     if puzzle_type == "mini":
         first_days = list(pd.date_range(start = start_date, end = pd.Timestamp("today"), freq = "MS").astype(str))
         first_days = [i.split("-") for i in first_days]
@@ -58,7 +59,8 @@ def retrieve_data(puzzle_type, start_date, cookies):
     return my_stats, metadata_dedup
 
 
-def create_stats_frame(my_stats):
+def create_stats_frame(my_stats: dict) -> pd.DataFrame:
+    '''Creates DataFrame from the stats dictionary.'''
     stats_frame = pd.DataFrame(my_stats)
     stats_frame = stats_frame.T.reset_index()
     stats_frame = stats_frame[["index", "secondsSpentSolving"]].astype({"index": 'string', "secondsSpentSolving": float})
@@ -66,12 +68,14 @@ def create_stats_frame(my_stats):
     return stats_frame
 
 
-def merge_frames(stats_frame, metadata):
+def merge_frames(stats_frame: pd.DataFrame, metadata: pd.DataFrame) -> pd.DataFrame:
+    '''Merges stats DataFrame with metadata DataFrame.'''
     crosswords = pd.merge(stats_frame, metadata, how = "outer", on = "puzzle_id")
     return crosswords
 
 
-def add_days(crosswords):
+def add_days(crosswords: pd.DataFrame) -> pd.DataFrame:
+    '''Adds days column to the DataFrame.'''
     days_of_week = {"0": "Monday",
                     "1": "Tuesday",
                     "2": "Wednesday",
@@ -87,11 +91,13 @@ def add_days(crosswords):
     return crosswords
     
 
-def save_crosswords(crosswords, puzzle_type, start_date):    
+def save_crosswords(crosswords: pd.DataFrame, puzzle_type: str, start_date: str) -> None:
+    '''Saves the DataFrame containing crossword data to the data folder.'''
     crosswords.to_csv(f'data/{puzzle_type}_{"".join(start_date.split("-"))}_{str(datetime.now().date())}.csv', index = False)
 
 
-def main():
+def main() -> None:
+    '''Loads user's crossword data.'''
     with open("data/user_data.json", 'r') as file:
         data = json.load(file)
     cookies = {"NYT-S": data["cookie"]}

@@ -6,7 +6,8 @@ from src.data_prep import *
 
 week_xlabels = ["Mon","Tues","Wed","Thurs","Fri","Sat","Sun"]
 
-def create_hist(day: str, ax):
+def create_hist(day: str, ax: plt.Axes) -> None:
+    '''Draws daily histogram graph.'''
     day_frame = get_day_frame(day)
 
     ax.hist((day_frame["seconds_spent_solving"]/60), bins = 20, color = "lightgrey") 
@@ -25,7 +26,8 @@ def create_hist(day: str, ax):
     
     ax.legend(loc='upper right', fontsize='x-large')
 
-def create_compare_ave_times():
+def create_compare_ave_times() -> None:
+    '''Draws average time by day bar chart.'''
     all_days = prep_bar_chart_all_days()
     all_days_min = all_days/60
 
@@ -55,7 +57,8 @@ def create_compare_ave_times():
                     f'',
                     fontdict= {"size":"x-large"})
 
-def create_mini_hist_box(num_days, ax, ax_box):
+def create_mini_hist_box(num_days: int, ax: plt.Axes, ax_box: plt.Axes) -> None:
+    '''Draws histogram/boxplot graph for mini crosswords.'''
     mini_hist_box_data = prep_mini_hist_box(num_days)
 
     ax.hist(mini_hist_box_data, bins=30, color='gold', edgecolor='black')

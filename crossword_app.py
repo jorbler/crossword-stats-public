@@ -6,7 +6,8 @@ import sys
 import json
 
 class CWApp(qtw.QApplication):
-    def __init__(self):
+    '''App that runs the program.'''
+    def __init__(self) -> None:
         super().__init__([])
 
         self.load_user_info()
@@ -14,7 +15,8 @@ class CWApp(qtw.QApplication):
         sys.exit(self.exec_())
         return
     
-    def load_user_info(self):
+    def load_user_info(self) -> None:
+        '''Checks if user info exists. If not, a dialog window where user inputs info pops up. If it exists, the main window will open.'''
         try:
             with open('data/user_data.json') as f:
                 self.user_data = json.load(f)
@@ -24,12 +26,14 @@ class CWApp(qtw.QApplication):
         except Exception as e:
             self.enter_cookie()
 
-    def enter_cookie(self):
+    def enter_cookie(self) -> None:
+        '''Shows dialog window with input box for user to input their cookie.'''
         self.cookie = EnterCookie()
         self.cookie.show()
         return
 
-    def main_window(self):
+    def main_window(self) -> None:
+        '''Shows main window.'''
         self.main = MainWindow()
         self.main.show()
         return

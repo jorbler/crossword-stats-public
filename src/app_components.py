@@ -14,10 +14,8 @@ from src.globals import *
 import src.data_refresh
 
 class YesNoPopUpWindow(qtw.QMessageBox):
-    '''
-    Creates a dialog box with title, body text, and Yes/No buttons.
-    '''
-    def __init__(self, title: str, body_text: str):
+    '''Creates a dialog box with title, body text, and Yes/No buttons.'''
+    def __init__(self, title: str, body_text: str) -> None:
         super().__init__()
         
         self.setWindowTitle(title)
@@ -28,16 +26,15 @@ class YesNoPopUpWindow(qtw.QMessageBox):
 
 
 class WelcomeWindow(YesNoPopUpWindow):
-    '''
-    Welcome window that appears to the user the first time that they open the app.
-    '''
-    def __init__(self):
+    '''Welcome window that appears to the user the first time that they open the app.'''
+    def __init__(self) -> None:
         intro_text = "Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nDo you need instructions on how to access your cookie?"
         super().__init__("Welcome!", intro_text)
 
 
 class MenuPage(qtw.QWidget):
-    def __init__(self, text, rel_image_path = None):
+    '''QWidget containing text and an optional image.'''
+    def __init__(self, text: str, rel_image_path: str = None) -> None:
         super().__init__()
         layout = qtw.QVBoxLayout()
         layout.addWidget(qtw.QLabel(text))
@@ -50,17 +47,16 @@ class MenuPage(qtw.QWidget):
 
 
 class IntroMenuPages(qtw.QWidget):
-    '''
-    Menu that has next and previous arrows that switch the "page" of the menu.
-    '''
-    def __init__(self):
+    '''Menu that has next and previous arrows that switch the "page" of the menu.'''
+    def __init__(self) -> None:
         super().__init__()
         self.create_pages()
         self.setWindowTitle("Cookie Instructions")
         self.resize(400, 300)
         self.show()
     
-    def create_pages(self):
+    def create_pages(self) -> None:
+        '''Creates a stacked widget containing all of the menu pages and adds the next and previous buttons'''
         layout = qtw.QVBoxLayout()
 
         page1 = MenuPage("Open https://www.nytimes.com/crosswords in Google Chrome.\n\nLog in to your account if not already logged in.")
@@ -100,21 +96,21 @@ class IntroMenuPages(qtw.QWidget):
 
         self.update_buttons()
 
-    def next_page(self):
+    def next_page(self) -> None:
         '''Go to next page in a stacked widget'''
         cur_index = self.stacked_widget.currentIndex()
         if cur_index < self.stacked_widget.count() -1:
             self.stacked_widget.setCurrentIndex(cur_index + 1)
         self.update_buttons()
     
-    def prev_page(self):
+    def prev_page(self) -> None:
         '''Go to previous page in a stacked widget'''
         cur_index = self.stacked_widget.currentIndex()
         if cur_index > 0:
             self.stacked_widget.setCurrentIndex(cur_index - 1)
         self.update_buttons()
 
-    def update_buttons(self):
+    def update_buttons(self) -> None:
         '''Change button states based on the current index'''
         cur_index = self.stacked_widget.currentIndex()
         total_pages = self.stacked_widget.count()
@@ -125,8 +121,7 @@ class IntroMenuPages(qtw.QWidget):
 
 class EnterCookie(qtw.QDialog):
     '''A popup window that prompts the user to enter their cookie into a text box.'''
-
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.setWindowTitle('Welcome!')
@@ -146,7 +141,8 @@ class EnterCookie(qtw.QDialog):
         self.my_layout.addWidget(self.input_box)
         self.my_layout.addWidget(self.ok_button)
         
-    def save_cookie(self):
+    def save_cookie(self) -> None:
+        '''Grabs text from input box and assigns user cookie to self.cookie.'''
         self.cookie_value = self.input_box.text()
         user_dict = {"cookie":self.cookie_value}
         with open('data/user_data.json', 'w') as f:
@@ -157,7 +153,8 @@ class EnterCookie(qtw.QDialog):
 
 
 class DailyHistTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget containing the histograms for the daily crosswords.'''
+    def __init__(self) -> None:
         super().__init__()
         self.day = "Monday"
 
@@ -175,12 +172,14 @@ class DailyHistTab(qtw.QWidget):
         self.setLayout(layout)
         self.draw_hist()
 
-    def draw_hist(self):
+    def draw_hist(self) -> None:
+        '''Clear the axis and draw the histogram'''
         self.ax.clear()
         create_hist(self.day, self.ax)
         self.hist_widget.draw() 
 
-    def text_changed(self, s):
+    def text_changed(self, s: str) -> None:
+        '''Change self.day to the day that the user selects in the combo box.'''
         self.day = s
         self.draw_hist()
 
@@ -200,7 +199,8 @@ class DailyBarTab(qtw.QWidget):
 
 
 class DailyGraphsTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget containing a stacked widget with DailyHistTab and DailyBarTab.'''
+    def __init__(self) -> None:
         super().__init__()
 
         layout = qtw.QVBoxLayout()
@@ -217,7 +217,8 @@ class DailyGraphsTab(qtw.QWidget):
 
 
 class DailyTableTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget that contains a table showing daily stats.'''
+    def __init__(self) -> None:
         super().__init__()
 
         daily_df = daily_table()
@@ -230,7 +231,8 @@ class DailyTableTab(qtw.QWidget):
 
 
 class DailyTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget containing DailyTableTab and DailyGraphsTab'''
+    def __init__(self) -> None:
         super().__init__()
 
         layout = qtw.QVBoxLayout()
@@ -247,7 +249,8 @@ class DailyTab(qtw.QWidget):
 
         
 class MiniGraphTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget containing graphs for mini data.'''
+    def __init__(self) -> None:
         super().__init__()
         self.days = 30
         self.ax_box = None
@@ -287,7 +290,8 @@ class MiniGraphTab(qtw.QWidget):
 
         self.draw_box_hist()
 
-    def draw_box_hist(self):
+    def draw_box_hist(self) -> None:
+        '''Clears axes and draws graph.'''
         self.ax.clear()
         
         if self.ax_box:
@@ -299,13 +303,15 @@ class MiniGraphTab(qtw.QWidget):
 
         self.hist_box_widget.draw() 
 
-    def change_num_days(self, button):
+    def change_num_days(self, button: qtw.QButtonGroup) -> None:
+        '''Change self.days the number that corresponds to the button that the user pushes.'''
         self.days = self.buttons_dict[button.text()]
         self.draw_box_hist()
 
 
 class MiniTableTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget containing table for mini data.'''
+    def __init__(self) -> None:
         super().__init__()
 
         mini_df = mini_table()
@@ -318,7 +324,8 @@ class MiniTableTab(qtw.QWidget):
 
 
 class MiniTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget containing MiniGraphTab and MiniTableTab'''
+    def __init__(self) -> None:
         super().__init__()
 
         layout = qtw.QVBoxLayout()
@@ -335,39 +342,36 @@ class MiniTab(qtw.QWidget):
 
 
 class TableWidgetConfigure(QAbstractTableModel):
-    def __init__(self, dataframe, col_names):
+    '''Configures table from a Pandas DataFrame.'''
+    def __init__(self, dataframe: pd.DataFrame, col_names: list[str]) -> None:
         super().__init__()
         self.dataframe = dataframe
         self.col_names = col_names
 
-    def rowCount(self, parent = None):
+    def rowCount(self, parent = None) -> int:
         return self.dataframe.shape[0]
 
-    def columnCount(self, parent = None):
+    def columnCount(self, parent = None) -> int:
         return self.dataframe.shape[1]
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.DisplayRole) -> None:
         if role == Qt.DisplayRole:
             value = self.dataframe.iloc[index.row(), index.column()]
             return str(value)
         return None
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
+    def headerData(self, section, orientation, role=Qt.DisplayRole) -> None:
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
                 return self.col_names[section]
             elif orientation == Qt.Vertical:
                 return str(self.dataframe.index[section])
         return None
-    
-    def updateData(self, new_data):
-        self.beginResetModel()
-        self._data = new_data
-        self.endResetModel()
 
 
 class TableWidget(qtw.QWidget):
-    def __init__(self, dataframe, col_names):
+    '''Creates QWidget containing table from TableWidgetConfigure.'''
+    def __init__(self, dataframe:pd.DataFrame, col_names:list[str]) -> None:
         super().__init__()
         self.dataframe = dataframe
 
@@ -385,7 +389,8 @@ class TableWidget(qtw.QWidget):
 
 
 class BonusTab(qtw.QWidget):
-    def __init__(self):
+    '''QWidget containing data for bonus puzzles.'''
+    def __init__(self) -> None:
         super().__init__()
 
         bonus_df = bonus_table()
@@ -398,6 +403,7 @@ class BonusTab(qtw.QWidget):
 
 
 class RefreshButton(qtw.QWidget):
+    '''QWidget containing a QPushButton that triggers the data refresh process.'''
     def __init__(self):
         super().__init__()
         self.get_last_date()
@@ -409,7 +415,8 @@ class RefreshButton(qtw.QWidget):
         layout.addWidget(self.refresh_button)
         self.setLayout(layout)
 
-    def refresh_data(self):
+    def refresh_data(self) -> None:
+        '''Events triggered by pressing "Refresh Data" button.'''
         if self.check_date():
             src.data_refresh.main()
             return
@@ -420,17 +427,20 @@ class RefreshButton(qtw.QWidget):
             else:
                 return
             
-    def get_last_date(self):
+    def get_last_date(self) -> None:
+        '''Retrieves the last date from the user_data.json file.'''
         with open("data/user_data.json", 'r') as file:
             self._user_data = json.load(file)
         self.last_date = datetime.strptime(self._user_data["last_refresh_date"], "%Y-%m-%d").date()
 
-    def check_date(self):
+    def check_date(self) -> bool:
+        '''Checks if the last date of refresh (self.last_date) was more than 30 days ago.'''
         if ((date.today() - timedelta(days=1)) - self.last_date).days > 30:
             return False
         return True
 
-    def confirm_refresh(self):
+    def confirm_refresh(self) -> bool:
+        '''Opens pop-up window that confirms that the user wants to proceed with refreshing data.'''
         confirm_window = ConfirmRefresh()
         if confirm_window.exec() == qtw.QMessageBox.Yes:
             return True
@@ -438,13 +448,18 @@ class RefreshButton(qtw.QWidget):
 
 
 class ConfirmRefresh(YesNoPopUpWindow):
-    def __init__(self):
+    '''YesNoPopUpWindow informing user that it has been more than 30 days since last data refresh and confirming that they want to proceed.'''
+    def __init__(self) -> None:
         text = "It has been more than 30 days since you last refreshed your crossword data. It may take a couple of minutes to refresh. Do you want to proceed?"
         super().__init__("Confirm Data Refresh", text)
 
 
 class InitalLoadData(qtw.QDialog):
-    def __init__(self):
+    '''
+    Loads the all of the initial user data upon first opening the app.
+    Asks user for start dates for each puzzle type.
+    '''
+    def __init__(self) -> None:
         super().__init__()
 
         daily_box_layout = qtw.QHBoxLayout()
@@ -505,7 +520,8 @@ class InitalLoadData(qtw.QDialog):
 
         self.setLayout(layout)
 
-    def load_data(self):  
+    def load_data(self) -> None:
+        '''Loads user data.'''
         try:
             with open("data/user_data.json", 'r') as file:
                     data = json.load(file)
@@ -592,14 +608,16 @@ class InitalLoadData(qtw.QDialog):
         except Exception as e:
             self.puzzle_type_label.setText("There was an error getting your data. Please check your cookie and internet connection")
 
-    def show_main_window(self):
+    def show_main_window(self) -> None:
+        '''Shows main window and accepts current window.'''
         self.main_window = MainWindow()
         self.main_window.show()
         self.accept()
 
 
 class MainWindow(qtw.QWidget):
-    def __init__(self):
+    '''Main window containing DailyTab, MiniTab, and BonusTab, along with a left navigation panel.'''
+    def __init__(self) -> None:
         super().__init__()
 
         self.setGeometry(100, 100, 1000, 600)
@@ -638,5 +656,6 @@ class MainWindow(qtw.QWidget):
         
         self.left_panel_top.setCurrentRow(0)
 
-    def change_page(self, index):
+    def change_page(self, index: int) -> None:
+        '''Changes page to index of the QListWidget.'''
         self.left_panel_pages.setCurrentIndex(index)
