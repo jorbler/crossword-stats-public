@@ -54,7 +54,7 @@ def add_todays_data(curr_file_path: str, puzzle_type: str) -> None:
     '''Concatinates the new data to the existing data and saves it. Renames the file to reflect the new last_refresh_date.'''
     today_date = str(date.today() - timedelta(days=1))
     current = pd.read_csv("data/" + curr_file_path)
-    start_date = get_last_date(curr_file_path)
+    start_date = get_last_date()
     todays_data = get_today(puzzle_type, start_date, today_date)
     new = pd.concat([current, todays_data])
     new = new.drop_duplicates(subset = ["print_date"])

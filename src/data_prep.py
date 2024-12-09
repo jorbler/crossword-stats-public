@@ -10,6 +10,7 @@ def load_daily_data() -> pd.DataFrame:
     '''Loads daily data for graphing/table view.'''
     data_files = os.listdir("data/")
     daily_data = pd.read_csv("data/" + [file for file in data_files if file.startswith("daily")][0])[["seconds_spent_solving", "print_date", "star", "day"]]
+    print(daily_data['day'].unique())
     return daily_data
 
 def daily_gold_days() -> pd.DataFrame:

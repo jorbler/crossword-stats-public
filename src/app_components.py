@@ -123,7 +123,7 @@ class EnterCookie(qtw.QDialog):
     '''A popup window that prompts the user to enter their cookie into a text box.'''
     def __init__(self) -> None:
         super().__init__()
-
+        print("in EnterCookie widget")
         self.setWindowTitle('Welcome!')
 
         self.welcome_text = qtw.QLabel("Welcome to MyCrosswordBuddy! This app allows you to gain insight into your NYT Crossword data. \nTo access your data, you will need to enter the cookie associated with your NYT Games account.\n\nFor detailed instructions on how to access your cookie, please go to the README file.")        
@@ -157,6 +157,8 @@ class DailyHistTab(qtw.QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.day = "Monday"
+
+        #days_in_data = 
 
         combo_box = qtw.QComboBox()
         combo_box.addItems(["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"])

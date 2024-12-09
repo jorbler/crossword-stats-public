@@ -20,14 +20,16 @@ class CWApp(qtw.QApplication):
         try:
             with open('data/user_data.json') as f:
                 self.user_data = json.load(f)
-                self.user_cookie = self.user_data["user_cookie"]
-                self.last_date = self.last_date["last_refresh_date"]
+                self.user_cookie = self.user_data["cookie"]
+                self.last_date = self.user_data["last_refresh_date"]
                 print(self.user_cookie)
         except Exception as e:
+            print("here")
             self.enter_cookie()
 
     def enter_cookie(self) -> None:
         '''Shows dialog window with input box for user to input their cookie.'''
+        print("in enter_cookie")
         self.cookie = EnterCookie()
         self.cookie.show()
         return
